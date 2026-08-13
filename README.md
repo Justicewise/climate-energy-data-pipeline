@@ -23,14 +23,14 @@ Each ingestion method fetches data, saves it untouched to a raw/Bronze layer, th
 - Scraped renewable energy data (Wikipedia/Ember) uses absolute values (TWh) with different structure than the Our World in Data source — will need alignment during transformation
 
 ## Tech Stack
-- Python (pandas, requests)
-- PostgreSQL / MySQL (planned — database ingestion layer)
+- Python (pandas, requests) Done!
+- PostgreSQL / MySQL (planned — database ingestion layer) Done!
 - AWS (planned — S3, Glue, Athena)
 
 ## Roadmap
 - [x] File ingestion (CSV, JSON, Parquet, XLSX)
 - [x] Web scraping ingestion
-- [ ] Database ingestion
+- [x] Database ingestion
 - [ ] AWS layer (S3, Glue, Athena)
 - [ ] Data cleaning and transformation (Silver layer)
 - [ ] Business-ready aggregates (Gold layer)
