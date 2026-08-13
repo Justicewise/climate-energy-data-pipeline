@@ -1,0 +1,46 @@
+import requests
+from datetime import datetime
+import os
+from bs4 import BeautifulSoup
+import pandas as pd 
+
+def fetch_and_save_html(url, save_dir="data/raw"):
+    headers = {"User-Agent": "Mozilla/5.0 (educational data engineering project)"}
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{save_dir}/raw_page_{timestamp}.html"
+    
+    os.makedirs(save_dir, exist_ok=True)
+    with open(filename, "wb") as f:
+        f.write(response.content)
+
+    print(f"Saved raw HTML to: {filename}")
+    return filename
+
+def parse_renewable_table(html_filepath):
+    with open(html_filepath, "r", encoding="utf-8") as f:
+        soup = BeautifulSoup(f, "html.parser")
+    
+    table = soup.find("table", {"class": "wikitable"})
+    if not table:
+        raise ValueError("Could not find the renewable electricity production table.")
+    
+    headers = [th.get_text(strip=True) for th in table.find_all("th")]
+    rows = []
+    for tr in table.find_all("tr")[1:]:  # Skip header row
+        cells = [td.get_text(strip=True) for td in tr.find_all("td")]
+        if cells:
+            rows.append(cells)
+    
+    df = pd.DataFrame(rows, columns=headers)
+    return df
+
+if __name__ == "__main__":
+    url = "https://en.wikipedia.org/wiki/List_of_countries_by_renewable_electricity_production"
+    saved_html = fetch_and_save_html(url)
+    df =parse_renewable_table(saved_html)
+
+    print(f"Parsed {len(df)} rows and {len(df.columns)} columns")
+    print(f"Columns: {list(df.columns)}")
+    print(df.head())
