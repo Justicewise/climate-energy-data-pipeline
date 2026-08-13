@@ -19,7 +19,8 @@ Each ingestion method fetches data, saves it untouched to a raw/Bronze layer, th
 
 ## Data Quality Observations (from initial ingestion)
 - Regional aggregates (e.g., "ASEAN (Ember)") have null country codes, unlike individual countries
-- Early years (pre-2000s) show 0.0 generation values in many regions, reflecting minimal solar/wind adoption historically
+- Early years (pre-2000s) show 0.0 generation values in many regions, reflecting minimal solar/wind adoption historically.
+- Scraped renewable energy data (Wikipedia/Ember) uses absolute values (TWh) with different structure than the Our World in Data source — will need alignment during transformation
 
 ## Tech Stack
 - Python (pandas, requests)
@@ -28,7 +29,7 @@ Each ingestion method fetches data, saves it untouched to a raw/Bronze layer, th
 
 ## Roadmap
 - [x] File ingestion (CSV, JSON, Parquet, XLSX)
-- [ ] Web scraping ingestion
+- [x] Web scraping ingestion
 - [ ] Database ingestion
 - [ ] AWS layer (S3, Glue, Athena)
 - [ ] Data cleaning and transformation (Silver layer)
