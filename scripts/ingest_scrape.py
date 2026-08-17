@@ -3,11 +3,18 @@ from datetime import datetime
 import os
 from bs4 import BeautifulSoup
 import pandas as pd 
+from logger_config import setup_logger
+
+logger = setup_logger("ingest_scrape")
 
 def fetch_and_save_html(url, save_dir="data/raw"):
     headers = {"User-Agent": "Mozilla/5.0 (educational data engineering project)"}
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Failed to fetch HTML from {url}: {e}")
+        raise
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{save_dir}/raw_page_{timestamp}.html"
     
@@ -15,15 +22,20 @@ def fetch_and_save_html(url, save_dir="data/raw"):
     with open(filename, "wb") as f:
         f.write(response.content)
 
-    print(f"Saved raw HTML to: {filename}")
+    logger.info(f"Saved raw HTML to: {filename}")
     return filename
 
 def parse_renewable_table(html_filepath):
-    with open(html_filepath, "r", encoding="utf-8") as f:
-        soup = BeautifulSoup(f, "html.parser")
-    
+    try:
+        with open(html_filepath, "r", encoding="utf-8") as f:
+            soup = BeautifulSoup(f, "html.parser")
+    except Exception as e:
+        logger.error(f"Failed to open or parse HTML file {html_filepath}: {e}")
+        raise
+
     table = soup.find("table", {"class": "wikitable"})
     if not table:
+        logger.error("Could not find the renewable electricity production table.")
         raise ValueError("Could not find the renewable electricity production table.")
     
     headers = [th.get_text(strip=True) for th in table.find_all("th")]
@@ -34,6 +46,7 @@ def parse_renewable_table(html_filepath):
             rows.append(cells)
     
     df = pd.DataFrame(rows, columns=headers)
+    logger.info(f"Parsed {len(df)} rows and {len(df.columns)} columns")
     return df
 
 if __name__ == "__main__":
@@ -41,6 +54,5 @@ if __name__ == "__main__":
     saved_html = fetch_and_save_html(url)
     df =parse_renewable_table(saved_html)
 
-    print(f"Parsed {len(df)} rows and {len(df.columns)} columns")
-    print(f"Columns: {list(df.columns)}")
-    print(df.head())
+    logger.info(f"Columns: {list(df.columns)}")
+    logger.info(f"\n{df.head()}")

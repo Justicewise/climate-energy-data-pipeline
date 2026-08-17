@@ -2,7 +2,9 @@ import pandas as pd
 from sqlalchemy import create_engine
 from datetime import datetime
 import os
+from logger_config import setup_logger
 
+logger = setup_logger("ingest_db")
 
 from dotenv import load_dotenv
 
@@ -21,7 +23,11 @@ def fetch_from_postgres(table_name, db_user, db_password, db_name, db_host="loca
     engine = create_engine(connection_string)
 
     query = f"SELECT * FROM {table_name}"
-    df = pd.read_sql(query, engine)
+    try:
+        df = pd.read_sql(query, engine)
+    except Exception as e:
+        logger.error(f"Failed to query table '{table_name}': {e}")
+        raise
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{save_dir}/raw_from_db_{timestamp}.csv"
@@ -29,7 +35,7 @@ def fetch_from_postgres(table_name, db_user, db_password, db_name, db_host="loca
     os.makedirs(save_dir, exist_ok=True)
     df.to_csv(filename, index=False)
 
-    print(f"Pulled {len(df)} rows from '{table_name}' and saved to {filename}")
+    logger.info(f"Pulled {len(df)} rows from '{table_name}' and saved to {filename}")
     return df
 
 
@@ -40,4 +46,4 @@ if __name__ == "__main__":
         db_password=DB_PASSWORD,
         db_name=DB_NAME
     )
-    print(df.head())
+    logger.info(f"\n{df.head()}")
