@@ -3,9 +3,14 @@ from datetime import datetime
 import os
 from bs4 import BeautifulSoup
 import pandas as pd 
+from tenacity import retry, stop_after_attempt, wait_exponential
 from logger_config import setup_logger
 
 logger = setup_logger("ingest_scrape")
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10)
+)
 
 def fetch_and_save_html(url, save_dir="data/raw"):
     headers = {"User-Agent": "Mozilla/5.0 (educational data engineering project)"}

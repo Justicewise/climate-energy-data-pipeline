@@ -2,6 +2,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from datetime import datetime
 import os
+from tenacity import retry, stop_after_attempt, wait_exponential
 from logger_config import setup_logger
 
 logger = setup_logger("ingest_db")
@@ -15,7 +16,10 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 
 
-
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10)
+)
 
 
 def fetch_from_postgres(table_name, db_user, db_password, db_name, db_host="localhost", db_port="5432", save_dir="data/raw"):

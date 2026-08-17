@@ -12,6 +12,7 @@ DB_NAME = os.getenv("DB_NAME")
 
 
 
+
 def load_csv_to_postgres(csv_filepath, table_name, db_user, db_password, db_name, db_host="localhost", db_port="5432"):
     df = pd.read_csv(csv_filepath)
 

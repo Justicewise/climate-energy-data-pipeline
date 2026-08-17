@@ -3,11 +3,15 @@ from datetime import datetime
 import os
 import json
 import pandas as pd
+from tenacity import retry, stop_after_attempt, wait_exponential
 from logger_config import setup_logger
 
 logger = setup_logger("ingest_file")
 
-
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10)
+)
 def fetch_and_save_csv(url, save_dir="data/raw"):
     # Step 1: Fetch the raw file from the URL
     try:
@@ -44,6 +48,13 @@ def verify_csv(filepath):
     logger.info(f"\n{df.head()}")
     return df
 
+
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10)
+)
 
 def fetch_and_save_json(url, save_dir="data/raw"):
     try:
