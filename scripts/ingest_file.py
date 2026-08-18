@@ -13,7 +13,15 @@ logger = setup_logger("ingest_file")
     wait=wait_exponential(multiplier=1, min=2, max=10)
 )
 def fetch_and_save_csv(url, save_dir="data/raw"):
-    # Step 1: Fetch the raw file from the URL
+    date_str = datetime.now().strftime("%Y%m%d")
+    filename = f"{save_dir}/raw_data_{date_str}.csv"
+
+    # Idempotency check: if the file already exists, skip downloading
+    if os.path.exists(filename):
+        logger.info(f"File for {filename} already exists. Skipping download.")
+        return filename
+
+    # Fetch the raw file from the URL
     try:
         response = requests.get(url)
         response.raise_for_status()  # throws an error if the download failed
@@ -21,14 +29,10 @@ def fetch_and_save_csv(url, save_dir="data/raw"):
         logger.error(f"Failed to fetch data from {url}: {e}")
         raise
 
-    # Step 2: Build a filename with a timestamp, so each pull is kept separate
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{save_dir}/raw_data_{timestamp}.csv"
-
-    # Step 3: Make sure the save directory actually exists
+    # Make sure the save directory actually exists
     os.makedirs(save_dir, exist_ok=True)
 
-    # Step 4: Save the raw content, untouched, exactly as received
+    # Save the raw content, untouched, exactly as received
     with open(filename, "wb") as f:
         f.write(response.content)
 
@@ -57,15 +61,19 @@ def verify_csv(filepath):
 )
 
 def fetch_and_save_json(url, save_dir="data/raw"):
+    date_str = datetime.now().strftime("%Y%m%d")
+    filename = f"{save_dir}/raw_metadata_{date_str}.json"
+
+    if os.path.exists(filename):
+        logger.info(f"File for {filename} already exists. Skipping download.")
+        return filename
+
     try:
         response = requests.get(url)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         logger.error(f"Failed to fetch JSON from {url}: {e}")
         raise
-
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{save_dir}/raw_metadata_{timestamp}.json"
 
     os.makedirs(save_dir, exist_ok=True)
 
@@ -91,14 +99,18 @@ def verify_json(filepath):
 
 
 def convert_to_parquet(csv_filepath, save_dir="data/raw"):
+
+    date_str = datetime.now().strftime("%Y%m%d") 
+    filename = f"{save_dir}/raw_data_{date_str}.parquet"
+    if os.path.exists(filename):
+        logger.info(f"File for {filename} already exists. Skipping conversion.")
+        return filename
     try:
         df = pd.read_csv(csv_filepath)
     except Exception as e:
         logger.error(f"Failed to read csv file from {csv_filepath}: {e}")
         raise
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{save_dir}/raw_data_{timestamp}.parquet"
     os.makedirs(save_dir, exist_ok=True)
     df.to_parquet(filename, index=False)
     logger.info(f"Saved parquet file to: {filename}")
@@ -119,14 +131,18 @@ def verify_parquet(filepath):
 
 
 def convert_to_xlsx(csv_filepath, save_dir="data/raw"):
+    date_str = datetime.now().strftime("%Y%m%d")
+    filename = f"{save_dir}/raw_data_{date_str}.xlsx"
+    if os.path.exists(filename):
+        logger.info(f"File for {filename} already exists. Skipping conversion.")
+        return filename
+    
     try:
         df = pd.read_csv(csv_filepath)
     except Exception as e:
         logger.error(f"Failed to read csv file from {csv_filepath}: {e}")
         raise
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{save_dir}/raw_data_{timestamp}.xlsx"
     os.makedirs(save_dir, exist_ok=True)
     df.to_excel(filename, index=False)
 

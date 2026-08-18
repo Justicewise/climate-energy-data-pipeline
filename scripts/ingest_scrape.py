@@ -7,6 +7,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from logger_config import setup_logger
 
 logger = setup_logger("ingest_scrape")
+
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10)
@@ -14,14 +15,17 @@ logger = setup_logger("ingest_scrape")
 
 def fetch_and_save_html(url, save_dir="data/raw"):
     headers = {"User-Agent": "Mozilla/5.0 (educational data engineering project)"}
+    date_str = datetime.now().strftime("%Y%m%d")
+    filename = f"{save_dir}/raw_page_{date_str}.html"
+    if os.path.exists(filename):
+        logger.info(f"File for {filename} already exists. Skipping download.")
+        return filename
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         logger.error(f"Failed to fetch HTML from {url}: {e}")
         raise
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{save_dir}/raw_page_{timestamp}.html"
     
     os.makedirs(save_dir, exist_ok=True)
     with open(filename, "wb") as f:
@@ -29,6 +33,10 @@ def fetch_and_save_html(url, save_dir="data/raw"):
 
     logger.info(f"Saved raw HTML to: {filename}")
     return filename
+
+
+
+    
 
 def parse_renewable_table(html_filepath):
     try:

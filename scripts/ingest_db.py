@@ -23,6 +23,12 @@ DB_NAME = os.getenv("DB_NAME")
 
 
 def fetch_from_postgres(table_name, db_user, db_password, db_name, db_host="localhost", db_port="5432", save_dir="data/raw"):
+    date_str = datetime.now().strftime("%Y%m%d")
+    filename = f"{save_dir}/raw_from_db_{date_str}.csv"
+    if os.path.exists(filename):
+        logger.info(f"File for {filename} already exists. Skipping database fetch.")
+        return pd.read_csv(filename)
+    
     connection_string = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
     engine = create_engine(connection_string)
 
@@ -32,9 +38,6 @@ def fetch_from_postgres(table_name, db_user, db_password, db_name, db_host="loca
     except Exception as e:
         logger.error(f"Failed to query table '{table_name}': {e}")
         raise
-
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{save_dir}/raw_from_db_{timestamp}.csv"
 
     os.makedirs(save_dir, exist_ok=True)
     df.to_csv(filename, index=False)
