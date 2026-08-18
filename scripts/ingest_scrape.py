@@ -2,6 +2,7 @@ import requests
 from datetime import datetime
 import os
 from bs4 import BeautifulSoup
+from config import RENEWABLE_TABLE_URL, RAW_DATA_DIR
 import pandas as pd 
 from tenacity import retry, stop_after_attempt, wait_exponential
 from logger_config import setup_logger
@@ -65,8 +66,7 @@ def parse_renewable_table(html_filepath):
 from validate_schema import validate_dataframe, renewable_table_schema
 
 if __name__ == "__main__":
-    url = "https://en.wikipedia.org/wiki/List_of_countries_by_renewable_electricity_production"
-    saved_html = fetch_and_save_html(url)
+    saved_html = fetch_and_save_html(RENEWABLE_TABLE_URL, save_dir=RAW_DATA_DIR)
     df = parse_renewable_table(saved_html)
     df = validate_dataframe(df, renewable_table_schema, source_name="Web scraping")
 

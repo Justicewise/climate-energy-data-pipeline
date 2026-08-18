@@ -2,6 +2,7 @@ import requests
 from datetime import datetime
 import os
 import json
+from config import SOLAR_WIND_CSV_URL, SOLAR_WIND_JSON_URL, RAW_DATA_DIR
 import pandas as pd
 from tenacity import retry, stop_after_attempt, wait_exponential
 from logger_config import setup_logger
@@ -166,17 +167,16 @@ def verify_xlsx(filepath):
 from validate_schema import validate_dataframe, solar_wind_schema
 
 if __name__ == "__main__":
-    url = "https://ourworldindata.org/grapher/solar-and-wind-power-generation.csv?v=1&csvType=full&useColumnShortNames=false"
-    saved_csv = fetch_and_save_csv(url)
+    
+    saved_csv = fetch_and_save_csv(SOLAR_WIND_CSV_URL, save_dir=RAW_DATA_DIR)
     df = verify_csv(saved_csv)
     df = validate_dataframe(df, solar_wind_schema, source_name="CSV ingestion")
 
-    json_url = "https://ourworldindata.org/grapher/solar-and-wind-power-generation.metadata.json?v=1&csvType=full&useColumnShortNames=false"
-    saved_json = fetch_and_save_json(json_url)
+    saved_json = fetch_and_save_json(SOLAR_WIND_JSON_URL, save_dir=RAW_DATA_DIR)
     verify_json(saved_json)
 
-    saved_parquet = convert_to_parquet(saved_csv)
+    saved_parquet = convert_to_parquet(saved_csv, save_dir=RAW_DATA_DIR)
     verify_parquet(saved_parquet)
 
-    saved_xlsx = convert_to_xlsx(saved_csv)
+    saved_xlsx = convert_to_xlsx(saved_csv, save_dir=RAW_DATA_DIR)
     verify_xlsx(saved_xlsx)

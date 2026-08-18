@@ -8,6 +8,7 @@ from logger_config import setup_logger
 logger = setup_logger("ingest_db")
 
 from dotenv import load_dotenv
+from config import DB_TABLE_NAME, DB_HOST, DB_PORT, RAW_DATA_DIR
 
 load_dotenv()
 
@@ -49,10 +50,13 @@ from validate_schema import validate_dataframe, solar_wind_schema
 
 if __name__ == "__main__":
     df = fetch_from_postgres(
-        table_name="solar_wind_generation",
+        table_name=DB_TABLE_NAME,
         db_user=DB_USER,
         db_password=DB_PASSWORD,
-        db_name=DB_NAME
+        db_name=DB_NAME,
+        db_host=DB_HOST,
+        db_port=DB_PORT,
+        save_dir=RAW_DATA_DIR
     )
     df = validate_dataframe(df, solar_wind_schema, source_name="Database ingestion")
     logger.info(f"\n{df.head()}")
