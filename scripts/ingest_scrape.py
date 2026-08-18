@@ -36,7 +36,7 @@ def fetch_and_save_html(url, save_dir="data/raw"):
 
 
 
-    
+
 
 def parse_renewable_table(html_filepath):
     try:
@@ -62,10 +62,13 @@ def parse_renewable_table(html_filepath):
     logger.info(f"Parsed {len(df)} rows and {len(df.columns)} columns")
     return df
 
+from validate_schema import validate_dataframe, renewable_table_schema
+
 if __name__ == "__main__":
     url = "https://en.wikipedia.org/wiki/List_of_countries_by_renewable_electricity_production"
     saved_html = fetch_and_save_html(url)
-    df =parse_renewable_table(saved_html)
+    df = parse_renewable_table(saved_html)
+    df = validate_dataframe(df, renewable_table_schema, source_name="Web scraping")
 
     logger.info(f"Columns: {list(df.columns)}")
     logger.info(f"\n{df.head()}")

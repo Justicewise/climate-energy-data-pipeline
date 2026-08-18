@@ -163,10 +163,13 @@ def verify_xlsx(filepath):
     return df
 
 
+from validate_schema import validate_dataframe, solar_wind_schema
+
 if __name__ == "__main__":
     url = "https://ourworldindata.org/grapher/solar-and-wind-power-generation.csv?v=1&csvType=full&useColumnShortNames=false"
     saved_csv = fetch_and_save_csv(url)
-    verify_csv(saved_csv)
+    df = verify_csv(saved_csv)
+    df = validate_dataframe(df, solar_wind_schema, source_name="CSV ingestion")
 
     json_url = "https://ourworldindata.org/grapher/solar-and-wind-power-generation.metadata.json?v=1&csvType=full&useColumnShortNames=false"
     saved_json = fetch_and_save_json(json_url)

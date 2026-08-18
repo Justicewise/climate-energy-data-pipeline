@@ -45,6 +45,7 @@ def fetch_from_postgres(table_name, db_user, db_password, db_name, db_host="loca
     logger.info(f"Pulled {len(df)} rows from '{table_name}' and saved to {filename}")
     return df
 
+from validate_schema import validate_dataframe, solar_wind_schema
 
 if __name__ == "__main__":
     df = fetch_from_postgres(
@@ -53,4 +54,5 @@ if __name__ == "__main__":
         db_password=DB_PASSWORD,
         db_name=DB_NAME
     )
+    df = validate_dataframe(df, solar_wind_schema, source_name="Database ingestion")
     logger.info(f"\n{df.head()}")
